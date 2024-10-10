@@ -1,17 +1,14 @@
-// src/screens/HomeScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Button, Image, StyleSheet, Alert, TextInput } from 'react-native';
+import { View, Text, FlatList, Button, Image, StyleSheet, Alert, TextInput, TouchableOpacity } from 'react-native';
 import { getDatabase, ref, onValue, remove } from 'firebase/database';
+import { Ionicons } from '@expo/vector-icons'; // Import icon
 
 const HomeScreen = ({ navigation, route }) => {
-  const { uid, email } = route.params; // Lấy uid và email từ params
+  const { uid, email } = route.params;
   const [products, setProducts] = useState([]);
-  //trạng thái lưu trữ từ khóa tìm kiếm
-  const [searchQuery, setSearchQuery] = useState('');
-  // Trạng thái lưu trữ danh sách sản phẩm đã được lọc theo từ khóa tìm kiếm.
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  
-  //Sử dụng useEffect để lấy dữ liệu sản phẩm
+  const [searchQuery, setSearchQuery] = useState(''); //Chuỗi tìm kiếm để lọc sản phẩm.
+  const [filteredProducts, setFilteredProducts] = useState([]); //anh sách sản phẩm sau khi lọc dựa trên searchQuery
+
   useEffect(() => {
     const productsRef = ref(getDatabase(), `products/${uid}`);
     const unsubscribe = onValue(productsRef, (snapshot) => {
@@ -21,11 +18,9 @@ const HomeScreen = ({ navigation, route }) => {
       setFilteredProducts(productList); // Set initial filtered products
     });
 
-    // Hủy đăng ký lắng nghe khi component unmount
     return () => unsubscribe();
   }, [uid]);
 
-  // Lọc sản phẩm theo từ khóa tìm kiếm
   useEffect(() => {
     const filtered = products.filter(product =>
       product.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -41,24 +36,22 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   const handleLogout = () => {
-    // Gọi hàm đăng xuất
     if (route.params.onLogout) {
       route.params.onLogout();
     }
   };
 
-  // Thiết lập nút điều hướng
   React.useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <Button title="Đăng xuất" onPress={handleLogout} color="red" />
+        <Button title="Đăng xuất" onPress={handleLogout} color="red"/>
       ),
     });
   }, [navigation]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.welcomeText}>Chào mừng, {email}</Text>
+      <Text style={styles.welcomeText}>Chào mừng {email}</Text>
       <TextInput
         style={styles.searchInput}
         placeholder="Tìm kiếm sản phẩm theo tên"
@@ -77,24 +70,32 @@ const HomeScreen = ({ navigation, route }) => {
               <Image source={{ uri: item.image }} style={styles.productImage} />
             )}
             <View style={styles.buttonGroup}>
-              <Button
-                title="Sửa sản phẩm"
-                onPress={() => navigation.navigate('EditProduct', { product: item, uid })} // Truyền uid
-              />
-              <Button
-                title="Xóa sản phẩm"
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => navigation.navigate('EditProduct', { product: item, uid })}
+              >
+                <Ionicons name="pencil-outline" size={20} color="#fff" />
+                <Text style={styles.buttonText}>Sửa</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton}
                 onPress={() => handleDeleteProduct(item.key)}
-                color="red"
-              />
+              >
+                <Ionicons name="trash-outline" size={20} color="#fff" />
+                <Text style={styles.buttonText}>Xóa</Text>
+              </TouchableOpacity>
             </View>
           </View>
         )}
       />
       <View style={styles.buttonContainer}>
-        <Button
-          title="Thêm sản phẩm"
-          onPress={() => navigation.navigate('AddProduct', { uid })} // Truyền uid
-        />
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => navigation.navigate('AddProduct', { uid })}
+        >
+          <Ionicons name="add-circle-outline" size={20} color="#fff" />
+          <Text style={styles.addButtonText}>Thêm sản phẩm</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -104,38 +105,39 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f0f4f8',
+    backgroundColor: '#e9f1f7',
   },
   welcomeText: {
     fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#333',
+    color: '#1e90ff',
     textAlign: 'center',
   },
   searchInput: {
     height: 40,
-    borderColor: '#ccc',
+    borderColor: '#1e90ff',
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 10,
     paddingHorizontal: 10,
     marginBottom: 20,
+    backgroundColor: '#fff',
   },
   productContainer: {
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 15,
     padding: 20,
     marginBottom: 15,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
   },
   productName: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#2c3e50',
+    fontWeight: 'bold',
+    color: '#333',
   },
   productType: {
     fontSize: 16,
@@ -151,7 +153,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     marginVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
     resizeMode: 'cover',
   },
   buttonGroup: {
@@ -159,9 +161,40 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 10,
   },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3498db',
+    padding: 10,
+    borderRadius: 8,
+  },
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e74c3c',
+    padding: 10,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    marginLeft: 5,
+  },
   buttonContainer: {
     marginTop: 20,
-    alignItems: 'center'
+    alignItems: 'center',
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1e90ff',
+    padding: 15,
+    borderRadius: 10,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    marginLeft: 5,
   },
 });
 

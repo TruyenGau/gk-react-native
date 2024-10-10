@@ -1,13 +1,13 @@
-// src/screens/EditProductScreen.js
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Alert, Image } from 'react-native';
 import { getDatabase, ref, update } from 'firebase/database';
 import * as ImagePicker from 'expo-image-picker'; // Sử dụng expo-image-picker
+import { Picker } from '@react-native-picker/picker'; // Import Picker
 
 const EditProductScreen = ({ route, navigation }) => {
   const { product, uid } = route.params; // Nhận uid từ params
   const [name, setName] = useState(product.name);
-  const [type, setType] = useState(product.type);
+  const [type, setType] = useState(product.type); // Loại sản phẩm
   const [price, setPrice] = useState(product.price);
   const [imageUri, setImageUri] = useState(product.image); // Thêm trạng thái cho ảnh
 
@@ -60,12 +60,14 @@ const EditProductScreen = ({ route, navigation }) => {
         value={name}
         onChangeText={setName}
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Loại sản phẩm"
-        value={type}
-        onChangeText={setType}
-      />
+      <Picker
+        selectedValue={type}
+        onValueChange={(itemValue) => setType(itemValue)}
+        style={styles.picker}
+      >
+        <Picker.Item label="Đồ ăn" value="Đồ ăn" />
+        <Picker.Item label="Nước uống" value="Nước uống" />
+      </Picker>
       <TextInput
         style={styles.input}
         placeholder="Giá sản phẩm"
@@ -86,20 +88,47 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: '#f7f8fa', 
     justifyContent: 'center',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 15,
-    borderRadius: 8,
+    borderColor: '#d1d1d1', 
+    padding: 12,
+    marginBottom: 20,
+    borderRadius: 10, 
+    backgroundColor: '#fff', 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 4, 
+    elevation: 3, 
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+    marginBottom: 20,
+    backgroundColor: '#fff', 
+    borderColor: '#d1d1d1', 
+    borderWidth: 1,
+    borderRadius: 10, 
+    paddingHorizontal: 10, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 4, 
+    elevation: 3, 
   },
   image: {
-    width: 100,
-    height: 100,
+    width: '100%', 
+    height: 200, 
     marginVertical: 10,
-    borderRadius: 8,
+    borderRadius: 10, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 4, 
+    elevation: 3, 
   },
 });
 
